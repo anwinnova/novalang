@@ -1,0 +1,24 @@
+# NovaLang v2.0 Motor & Hardware Automation Script (.nova)
+# Author: Founder & Creator
+
+log "Starting Robotic Arm & Motor Sequence Calibration..."
+
+# Step 1: Position Base Motor
+move_motor "motor_base" 90 60
+wait 300ms
+
+# Step 2: Extend Shoulder & Wrist
+move_motor "motor_shoulder" 45 50
+move_motor "motor_wrist" 120 70
+wait 500ms
+
+# Step 3: Grab Payload
+gripper_state "close"
+wait 400ms
+
+# Step 4: Rotate Arm to Target Pose & Release
+move_motor "motor_base" 180 80
+wait 500ms
+gripper_state "open"
+
+log "Hardware Motor Cycle Completed Successfully!"

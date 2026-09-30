@@ -1,0 +1,21 @@
+{
+  "name": "@novalang/platform",
+  "version": "2.0.0",
+  "description": "NovaLang v2.0 - Super-Advanced Process Automation, Story Compiler, Motion Recorder & Hardware Language",
+  "author": "Founder & Creator",
+  "license": "MIT",
+  "main": "src/runtime/interpreter.js",
+  "bin": {
+    "novalang": "bin/novalang.js"
+  },
+  "type": "module",
+  "keywords": [
+    "novalang",
+    "story-to-code",
+    "motion-recorder",
+    "robotics",
+    "motor-control",
+    "automation-language",
+    "rpa"
+  ]
+}

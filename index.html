@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaLang v2.0 Studio - Story AI & Motion Macro Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-icon">N</div>
+      <h1>NovaLang <span style="font-weight: 300; opacity: 0.7;">Studio v2.0</span></h1>
+      <span class="founder-badge">Founder Platform</span>
+    </div>
+
+    <div class="controls">
+      <select id="template-select" class="template-select">
+        <option value="motor">Example: Motor & Hardware Control (.nova)</option>
+        <option value="scraper">Example: Web Scraper & Lead Gen (.nova)</option>
+        <option value="pipeline">Example: API & AI Pipeline (.nova)</option>
+      </select>
+
+      <button id="btn-run" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Run Nova Script
+      </button>
+
+      <button id="btn-stop" class="btn btn-danger" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+        Stop
+      </button>
+
+      <button id="btn-clear" class="btn btn-secondary">Clear Logs</button>
+    </div>
+  </header>
+
+  <!-- Top Feature Toolbar: Natural Language Story AI & Motion Recorder -->
+  <div class="feature-toolbar">
+    
+    <!-- Feature 1: Natural Language Story-to-Code Compiler -->
+    <div class="feature-box">
+      <div class="feature-title">
+        <span>📖 Story AI Compiler (Plain English to Code)</span>
+        <button id="btn-compile-story" class="btn btn-accent" style="padding: 3px 10px; font-size: 0.75rem;">Compile Story</button>
+      </div>
+      <textarea id="story-input" class="story-input" placeholder="Enter story e.g., 'Move motor base to 90 degrees at speed 60, wait 2 seconds, grab payload with gripper, move motor shoulder to 180 degrees'"></textarea>
+    </div>
+
+    <!-- Feature 2: Interactive Motor Motion Recorder -->
+    <div class="feature-box">
+      <div class="feature-title">
+        <span>🕹️ Virtual Motor Motion Studio & Keyframe Recorder</span>
+        <div style="display: flex; gap: 6px;">
+          <button id="btn-record-kf" class="btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;">🔴 Record Pose</button>
+          <button id="btn-export-macro" class="btn btn-secondary" style="padding: 3px 8px; font-size: 0.72rem;">📜 Export Loop</button>
+        </div>
+      </div>
+
+      <div class="motor-sliders">
+        <div class="motor-control">
+          <label><span>Motor Base</span> <b id="val-m1">0°</b></label>
+          <input type="range" id="slider-m1" min="0" max="360" value="0">
+        </div>
+        <div class="motor-control">
+          <label><span>Shoulder</span> <b id="val-m2">0°</b></label>
+          <input type="range" id="slider-m2" min="0" max="180" value="0">
+        </div>
+        <div class="motor-control">
+          <label><span>Wrist</span> <b id="val-m3">0°</b></label>
+          <input type="range" id="slider-m3" min="0" max="180" value="0">
+        </div>
+        <div class="motor-control">
+          <label><span>Gripper State</span></label>
+          <button id="btn-toggle-gripper" class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;">Open</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main IDE Panels -->
+  <main class="app-container">
+    
+    <!-- Panel 1: Code Editor -->
+    <section class="panel">
+      <div class="panel-header">
+        <span>NovaLang Code Editor (.nova)</span>
+        <span id="editor-status" style="color: var(--accent-green);">Ready</span>
+      </div>
+      <div class="editor-container">
+        <textarea id="code-editor" spellcheck="false" placeholder="Write or generate NovaLang code..."></textarea>
+      </div>
+    </section>
+
+    <!-- Panel 2: Visual Flow Graph -->
+    <section class="panel">
+      <div class="panel-header">
+        <span>AST Execution Statement Graph</span>
+        <span id="ast-count">0 Statements</span>
+      </div>
+      <div id="flow-container" class="flow-container">
+        <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 40px;">
+          Compile a Story or Run Script to visualize execution graph.
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 3: Execution Logs & Scope State -->
+    <section class="panel split-view">
+      <div class="console-container">
+        <div class="panel-header">
+          <span>Execution Console Logs</span>
+          <span id="log-count">0 Logs</span>
+        </div>
+        <div id="logs-list" class="logs-list">
+          <div class="log-item system">
+            <span class="log-time">00:00:00</span>
+            <span>Welcome to NovaLang Studio v2.0. Story AI Compiler & Motion Recorder ready.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-container">
+        <div class="panel-header">
+          <span>Live Motor & Scope Variables ($)</span>
+        </div>
+        <div id="variables-grid" class="variables-grid">
+          <div style="color: var(--text-muted); text-align: center; font-size: 0.8rem; padding: 12px;">
+            No variables assigned yet.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
