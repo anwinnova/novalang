@@ -1,11 +1,48 @@
 /**
- * NovaLang v2.0 Standard Library (stdlib)
- * Complete Automation Primitives: Hardware Motors/Robotics, Web DOM, HTTP, AI, and IO.
+ * NovaLang v2.5 Standard Library (stdlib)
+ * Complete Automation Primitives: Hardware Motors/Robotics, Universal Device Hub, Web DOM, HTTP, AI, and IO.
  */
+
+import { DeviceRegistry } from '../hardware/device_registry.js';
 
 export class StandardLibrary {
   constructor(runtime) {
     this.runtime = runtime;
+    this.deviceRegistry = new DeviceRegistry();
+  }
+
+  // --- Universal Hardware Device Hub Commands ---
+  async device_move(deviceId, angleDegrees, speed = 50) {
+    const angle = typeof angleDegrees === 'number' ? angleDegrees : parseFloat(angleDegrees) || 0;
+    const spd = typeof speed === 'number' ? speed : parseFloat(speed) || 50;
+
+    const dev = this.deviceRegistry.getDevice(deviceId);
+    const devName = dev ? dev.name : deviceId;
+
+    this.runtime.log(`[Device Hub] Targeted Move -> '${devName}' (${deviceId}) -> Angle: ${angle}°, Speed: ${spd}%`, 'hardware');
+    await this.runtime.delay(250);
+
+    this.deviceRegistry.updateTelemetry(deviceId, { currentAngle: angle, speedRpm: spd });
+
+    this.runtime.emitEvent('device_telemetry_updated', {
+      deviceId,
+      angle,
+      speed: spd,
+      timestamp: Date.now()
+    });
+
+    return { deviceId, angle, speed: spd, status: 'positioned' };
+  }
+
+  async device_bio(deviceId) {
+    const dev = this.deviceRegistry.getDevice(deviceId);
+    if (!dev) {
+      this.runtime.log(`[Device Hub] Warning: Device '${deviceId}' not found in registry.`, 'warning');
+      return null;
+    }
+
+    this.runtime.log(`[Device Bio] Inspected '${dev.name}' (${dev.type} - ${dev.model})`, 'info');
+    return dev;
   }
 
   // --- Hardware, Motor & Component Motion Primitives ---
@@ -16,7 +53,6 @@ export class StandardLibrary {
     this.runtime.log(`[Hardware Motor] Moving ${motorId} -> Angle: ${angle}°, Speed: ${spd}%`, 'hardware');
     await this.runtime.delay(300);
 
-    // Emit live motor motion event for virtual motor visualizer
     this.runtime.emitEvent('motor_motion', {
       motorId,
       angle,

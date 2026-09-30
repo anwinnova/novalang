@@ -1,6 +1,6 @@
 /**
- * NovaLang v2.0 Studio Frontend Controller
- * Binds Natural Language Story AI Compiler, Virtual Motor Motion Studio, Keyframe Macro Recorder, and Runtime Engine.
+ * NovaLang v2.5 Studio Controller
+ * Universal Hardware Device Hub, Device Bio Inspector, Targeted Motion Tracker & AI Hardware Copilot.
  */
 
 import { Lexer } from './src/parser/lexer.js';
@@ -8,66 +8,64 @@ import { Parser } from './src/parser/parser.js';
 import { Interpreter } from './src/runtime/interpreter.js';
 import { StoryCompiler } from './src/ai/story_compiler.js';
 import { KeyframeMacroRecorder } from './src/motion/macro_recorder.js';
+import { DeviceRegistry } from './src/hardware/device_registry.js';
+import { DeviceTracker } from './src/hardware/device_tracker.js';
+import { HardwareCopilot } from './src/ai/hardware_copilot.js';
 
 const TEMPLATES = {
-  motor: `# NovaLang v2.0 Motor & Hardware Automation Script (.nova)
+  devices: `# NovaLang v2.5 Multi-Device Hardware Fleet Script (.nova)
 # Author: Founder & Creator
 
-log "Starting Robotic Arm & Motor Sequence Calibration..."
+log "Starting Universal Hardware Device Synchronization..."
 
-move_motor "motor_base" 90 60
-wait 300ms
-
-move_motor "motor_shoulder" 45 50
-move_motor "motor_wrist" 120 70
+# Step 1: Initialize Conveyor & Position Base Servo
+set_speed "dev_dc_conveyor" 150
+device_move "dev_servo_base" 90 70
 wait 500ms
 
-gripper_state "close"
+# Step 2: Extend Shoulder Stepper Actuator
+device_move "dev_stepper_arm" 45 60
 wait 400ms
 
-move_motor "motor_base" 180 80
+# Step 3: Clamp Payload with Pneumatic Gripper
+gripper_state "close"
 wait 500ms
-gripper_state "open"
 
-log "Hardware Motor Cycle Completed Successfully!"`,
+# Step 4: Verify Thermal Sensor Array Feedback
+set $temp = read_sensor "thermal_array"
+log "Thermal Feedback Verified:" $temp
 
-  scraper: `# NovaLang v2.0 Web Scraping & Lead Enrichment Script (.nova)
-# Author: Founder & Creator
+log "Multi-Device Hardware Sequence Completed Successfully!"`,
 
+  motor: `# NovaLang v2.0 Motor & Hardware Automation Script (.nova)
+move_motor "motor_base" 90 60
+wait 300ms
+move_motor "motor_shoulder" 45 50
+gripper_state "close"
+wait 400ms
+move_motor "motor_base" 180 80
+gripper_state "open"`,
+
+  scraper: `# NovaLang Web Scraper & Lead Enrichment (.nova)
 set $url = "https://portal.novasmart.io/leads"
-log "Starting NovaLang Lead Scraper on" $url
-
 open $url
 click "#btn-login"
 type "#input-search" "Enterprise Clients"
 click "#btn-search"
 wait 500ms
-
 set $data = extract "table.leads-grid"
-log "Extracted leads dataset via NovaLang!"
+http_get "https://api.novasmart.io/enrich" -> ai "Analyze these leads" -> export "leads.json"`,
 
-http_get "https://api.novasmart.io/enrich" -> ai "Analyze these leads and categorize by revenue potential" -> export "leads_summary.json"
-
-log "NovaLang Automation Completed Successfully!"`,
-
-  pipeline: `# NovaLang v2.0 API & AI Data Pipeline (.nova)
-# Demonstrates HTTP API chaining, AI reasoning, and Exporting
-
-set $endpoint = "https://api.github.com/orgs/novasmart/repos"
-
-http_get $endpoint -> ai "Extract top 3 trending repositories and write release notes summary" -> export "release_notes.json"
-
-set $count = 3
-repeat $count times
-  log "NovaLang system health check iteration..."
-  wait 200ms
-end
-
-log "NovaLang Pipeline executed cleanly!"`
+  pipeline: `# NovaLang API & AI Pipeline (.nova)
+http_get "https://api.github.com/orgs/novasmart/repos" -> ai "Summarize repositories" -> export "summary.json"`
 };
 
 let interpreterInstance = null;
 const macroRecorder = new KeyframeMacroRecorder();
+const deviceRegistry = new DeviceRegistry();
+const deviceTracker = new DeviceTracker();
+
+let selectedDeviceId = 'dev_servo_base';
 let currentGripperState = 'open';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -83,7 +81,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const variablesGrid = document.getElementById('variables-grid');
   const editorStatus = document.getElementById('editor-status');
 
-  // Sliders & Controls
+  const deviceCardsGrid = document.getElementById('device-cards-grid');
+  const targetDeviceLabel = document.getElementById('target-device-label');
+  const btnTrackDevice = document.getElementById('btn-track-device');
+  const btnStopTrack = document.getElementById('btn-stop-track');
+
+  // Bio Modal Elements
+  const bioModal = document.getElementById('device-bio-modal');
+  const bioDeviceName = document.getElementById('bio-device-name');
+  const bioDeviceModel = document.getElementById('bio-device-model');
+  const bioDescription = document.getElementById('bio-description');
+  const bioSpecsGrid = document.getElementById('bio-specs-grid');
+  const bioCapabilitiesList = document.getElementById('bio-capabilities-list');
+  const btnCloseBio = document.getElementById('btn-close-bio');
+
+  // Sliders
   const sliderM1 = document.getElementById('slider-m1');
   const sliderM2 = document.getElementById('slider-m2');
   const sliderM3 = document.getElementById('slider-m3');
@@ -94,10 +106,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRecordKf = document.getElementById('btn-record-kf');
   const btnExportMacro = document.getElementById('btn-export-macro');
 
-  codeEditor.value = TEMPLATES.motor;
+  codeEditor.value = TEMPLATES.devices;
 
-  // Slider event listeners
-  sliderM1.addEventListener('input', () => { valM1.textContent = `${sliderM1.value}°`; });
+  renderDeviceHubCards();
+
+  // Slider event listeners & Device Motion Tracker events
+  sliderM1.addEventListener('input', () => {
+    valM1.textContent = `${sliderM1.value}°`;
+    if (deviceTracker.isTracking) {
+      deviceTracker.recordDeviceState(selectedDeviceId, { angle: parseInt(sliderM1.value), speed: 60 });
+      appendLog(`[Tracker] Motion event recorded for ${selectedDeviceId} -> Angle: ${sliderM1.value}°`, 'hardware');
+    }
+  });
+
   sliderM2.addEventListener('input', () => { valM2.textContent = `${sliderM2.value}°`; });
   sliderM3.addEventListener('input', () => { valM3.textContent = `${sliderM3.value}°`; });
 
@@ -105,7 +126,32 @@ document.addEventListener('DOMContentLoaded', () => {
     currentGripperState = currentGripperState === 'open' ? 'close' : 'open';
     btnToggleGripper.textContent = currentGripperState === 'open' ? 'Open' : 'Closed';
     btnToggleGripper.className = currentGripperState === 'open' ? 'btn btn-secondary' : 'btn btn-accent';
+
+    if (deviceTracker.isTracking) {
+      deviceTracker.recordDeviceState(selectedDeviceId, { gripper: currentGripperState });
+      appendLog(`[Tracker] Gripper event recorded for ${selectedDeviceId} -> ${currentGripperState}`, 'hardware');
+    }
   });
+
+  // Device Motion Tracker controls
+  btnTrackDevice.addEventListener('click', () => {
+    deviceTracker.startTracking(selectedDeviceId);
+    btnTrackDevice.disabled = true;
+    btnStopTrack.disabled = false;
+    appendLog(`🔴 Started Motion Tracker for component '${selectedDeviceId}'. Move hardware/sliders now...`, 'warning');
+  });
+
+  btnStopTrack.addEventListener('click', () => {
+    deviceTracker.stopTracking();
+    btnTrackDevice.disabled = false;
+    btnStopTrack.disabled = true;
+    const generatedCode = deviceTracker.generateNovaLangReplayCode(3);
+    codeEditor.value = generatedCode;
+    appendLog(`📜 Exported Targeted Device Replay Script for '${selectedDeviceId}' to editor!`, 'success');
+  });
+
+  // Modal Bio Close
+  btnCloseBio.addEventListener('click', () => { bioModal.classList.remove('open'); });
 
   // Keyframe Motion Recorder
   btnRecordKf.addEventListener('click', () => {
@@ -116,26 +162,22 @@ document.addEventListener('DOMContentLoaded', () => {
       gripper: currentGripperState,
       speed: 60
     };
-    const kf = macroRecorder.addKeyframe(pose);
-    appendLog(`🔴 Recorded Motor Keyframe #${macroRecorder.keyframes.length} (M1:${pose.motor1}°, M2:${pose.motor2}°, M3:${pose.motor3}°, Gripper:${pose.gripper})`, 'hardware');
+    macroRecorder.addKeyframe(pose);
+    appendLog(`🔴 Recorded Motor Keyframe #${macroRecorder.keyframes.length}`, 'hardware');
   });
 
   btnExportMacro.addEventListener('click', () => {
-    const code = macroRecorder.toNovaLangCode(2);
-    codeEditor.value = code;
+    codeEditor.value = macroRecorder.toNovaLangCode(2);
     appendLog(`📜 Exported ${macroRecorder.keyframes.length} keyframes to NovaLang code editor!`, 'success');
   });
 
   // Story Compiler
   btnCompileStory.addEventListener('click', () => {
     const storyText = storyInput.value.trim();
-    if (!storyText) {
-      appendLog('Please enter a natural language story description.', 'warning');
-      return;
-    }
+    if (!storyText) return;
     const compiled = StoryCompiler.compile(storyText);
     codeEditor.value = compiled.code;
-    appendLog(`📖 Compiled Story into ${compiled.sentencesCount} NovaLang statements!`, 'ai');
+    appendLog(`📖 Compiled Story into NovaLang statements!`, 'ai');
   });
 
   templateSelect.addEventListener('change', (e) => {
@@ -179,21 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
         onEvent: (evt) => {
           if (evt.event === 'variable_changed') {
             updateVariablesUI(interpreterInstance.variables);
-          } else if (evt.event === 'motor_motion') {
-            // Update virtual sliders dynamically during execution
-            if (evt.data.motorId.includes('base') || evt.data.motorId === 'motor1') {
+          } else if (evt.event === 'motor_motion' || evt.event === 'device_telemetry_updated') {
+            if (evt.data.angle !== undefined) {
               sliderM1.value = evt.data.angle;
               valM1.textContent = `${evt.data.angle}°`;
-            } else if (evt.data.motorId.includes('shoulder') || evt.data.motorId === 'motor2') {
-              sliderM2.value = evt.data.angle;
-              valM2.textContent = `${evt.data.angle}°`;
-            } else if (evt.data.motorId.includes('wrist') || evt.data.motorId === 'motor3') {
-              sliderM3.value = evt.data.angle;
-              valM3.textContent = `${evt.data.angle}°`;
             }
           }
-        },
-        onStep: async (node) => {}
+        }
       });
 
       await interpreterInstance.execute(ast);
@@ -218,6 +252,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function renderDeviceHubCards() {
+    deviceCardsGrid.innerHTML = '';
+    const devices = deviceRegistry.getAllDevices();
+
+    devices.forEach((dev) => {
+      const card = document.createElement('div');
+      card.className = `device-card ${dev.id === selectedDeviceId ? 'selected' : ''}`;
+      card.innerHTML = `
+        <div class="device-card-header">
+          <span>${escapeHTML(dev.type)}</span>
+          <span class="badge-health">${dev.healthScore}% OK</span>
+        </div>
+        <div class="device-card-name">${escapeHTML(dev.name)}</div>
+        <div class="device-card-footer">
+          <span>${escapeHTML(dev.model)}</span>
+          <span style="color: var(--accent-amber); font-weight: 600;">Inspect Bio ➔</span>
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        selectedDeviceId = dev.id;
+        targetDeviceLabel.textContent = `Target: ${dev.id}`;
+        renderDeviceHubCards();
+        openDeviceBioModal(dev);
+      });
+
+      deviceCardsGrid.appendChild(card);
+    });
+  }
+
+  function openDeviceBioModal(dev) {
+    bioDeviceName.textContent = `${dev.name} (${dev.id})`;
+    bioDeviceModel.textContent = `${dev.type} • ${dev.model} • ${dev.manufacturer}`;
+    bioDescription.textContent = dev.bio;
+
+    bioSpecsGrid.innerHTML = `
+      <div class="spec-box"><span>Operating Voltage</span><b>${dev.voltage}</b></div>
+      <div class="spec-box"><span>Health Score</span><b style="color: var(--accent-green);">${dev.healthScore}%</b></div>
+      <div class="spec-box"><span>Current Telemetry</span><b>Angle: ${dev.currentAngle}° | ${dev.speedRpm} RPM</b></div>
+      ${Object.entries(dev.specs).map(([k, v]) => `
+        <div class="spec-box"><span>${k.toUpperCase()}</span><b>${v}</b></div>
+      `).join('')}
+    `;
+
+    bioCapabilitiesList.innerHTML = dev.capabilities.map(c => `
+      <span class="capability-pill">⚡ ${c}</span>
+    `).join('');
+
+    bioModal.classList.add('open');
+  }
+
   function appendLog(message, type = 'info', timeStr = null) {
     const time = timeStr || new Date().toLocaleTimeString();
     const item = document.createElement('div');
@@ -229,8 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     logsList.appendChild(item);
     logsList.scrollTop = logsList.scrollHeight;
 
-    const count = logsList.children.length;
-    document.getElementById('log-count').textContent = `${count} Logs`;
+    document.getElementById('log-count').textContent = `${logsList.children.length} Logs`;
   }
 
   function renderASTNodes(ast) {
@@ -248,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (stmt.type === 'CommandStatement') {
         label = `Command: ${stmt.name}`;
-        if (['move_motor', 'rotate_servo', 'gripper_state', 'set_speed'].includes(stmt.name)) {
+        if (['device_move', 'move_motor', 'rotate_servo', 'gripper_state', 'set_speed'].includes(stmt.name)) {
           tagClass = 'tag-hardware';
         }
       } else if (stmt.type === 'AssignmentStatement') {

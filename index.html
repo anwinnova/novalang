@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NovaLang v2.0 Studio - Story AI & Motion Macro Studio</title>
+  <title>NovaLang v2.5 Studio - Universal Hardware & AI Platform</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,12 +12,13 @@
   <header class="app-header">
     <div class="brand">
       <div class="logo-icon">N</div>
-      <h1>NovaLang <span style="font-weight: 300; opacity: 0.7;">Studio v2.0</span></h1>
-      <span class="founder-badge">Founder Platform</span>
+      <h1>NovaLang <span style="font-weight: 300; opacity: 0.7;">Studio v2.5</span></h1>
+      <span class="founder-badge">Universal Hardware & AI Platform</span>
     </div>
 
     <div class="controls">
       <select id="template-select" class="template-select">
+        <option value="devices">Example: Multi-Device Hardware Fleet (.nova)</option>
         <option value="motor">Example: Motor & Hardware Control (.nova)</option>
         <option value="scraper">Example: Web Scraper & Lead Gen (.nova)</option>
         <option value="pipeline">Example: API & AI Pipeline (.nova)</option>
@@ -37,16 +38,36 @@
     </div>
   </header>
 
+  <!-- Universal Hardware Device Hub Section -->
+  <section class="device-hub-bar">
+    <div class="device-hub-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="hub-status-dot"></span>
+        <span style="font-weight: 700; color: var(--accent-cyan); font-size: 0.85rem;">CONNECTED HARDWARE DEVICES (5 DISCOVERED)</span>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="target-device-label" style="font-size: 0.78rem; color: var(--accent-amber);">Target: dev_servo_base</span>
+        <button id="btn-track-device" class="btn btn-danger" style="padding: 3px 10px; font-size: 0.75rem;">🔴 Start Device Motion Tracker</button>
+        <button id="btn-stop-track" class="btn btn-secondary" style="padding: 3px 10px; font-size: 0.75rem;" disabled>Stop & Generate Replay</button>
+      </div>
+    </div>
+
+    <div id="device-cards-grid" class="device-cards-grid">
+      <!-- 5 Dynamic Device Cards populated via JS -->
+    </div>
+  </section>
+
   <!-- Top Feature Toolbar: Natural Language Story AI & Motion Recorder -->
   <div class="feature-toolbar">
     
-    <!-- Feature 1: Natural Language Story-to-Code Compiler -->
+    <!-- Feature 1: Natural Language Story AI Compiler -->
     <div class="feature-box">
       <div class="feature-title">
         <span>📖 Story AI Compiler (Plain English to Code)</span>
         <button id="btn-compile-story" class="btn btn-accent" style="padding: 3px 10px; font-size: 0.75rem;">Compile Story</button>
       </div>
-      <textarea id="story-input" class="story-input" placeholder="Enter story e.g., 'Move motor base to 90 degrees at speed 60, wait 2 seconds, grab payload with gripper, move motor shoulder to 180 degrees'"></textarea>
+      <textarea id="story-input" class="story-input" placeholder="Enter story e.g., 'Move motor base to 90 degrees at speed 60, start conveyor belt at 150 RPM, wait 2 seconds, grab payload with gripper'"></textarea>
     </div>
 
     <!-- Feature 2: Interactive Motor Motion Recorder -->
@@ -118,7 +139,7 @@
         <div id="logs-list" class="logs-list">
           <div class="log-item system">
             <span class="log-time">00:00:00</span>
-            <span>Welcome to NovaLang Studio v2.0. Story AI Compiler & Motion Recorder ready.</span>
+            <span>Welcome to NovaLang Studio v2.5. Universal Hardware Registry & AI Platform initialized.</span>
           </div>
         </div>
       </div>
@@ -136,6 +157,39 @@
     </section>
 
   </main>
+
+  <!-- Device Bio Drawer / Modal -->
+  <div id="device-bio-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="device-icon-large">⚙️</span>
+          <div>
+            <h3 id="bio-device-name" style="font-size: 1.1rem; color: var(--accent-cyan);">Device Name</h3>
+            <span id="bio-device-model" style="font-size: 0.78rem; color: var(--text-muted);">Model & Manufacturer</span>
+          </div>
+        </div>
+        <button id="btn-close-bio" class="btn btn-secondary" style="padding: 4px 10px;">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="bio-section">
+          <h4 class="section-title">COMPONENT OVERVIEW & BIO</h4>
+          <p id="bio-description" style="font-size: 0.85rem; line-height: 1.5; color: #e2e8f0;"></p>
+        </div>
+
+        <div class="bio-section">
+          <h4 class="section-title">TECHNICAL SPECIFICATIONS</h4>
+          <div id="bio-specs-grid" class="specs-grid"></div>
+        </div>
+
+        <div class="bio-section">
+          <h4 class="section-title">SUPPORTED COMMAND CAPABILITIES</h4>
+          <div id="bio-capabilities-list" class="capabilities-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="app.js"></script>
 </body>
